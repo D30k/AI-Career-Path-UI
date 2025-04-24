@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Pathway AI - Career Assessment Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #f0f9ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 10px;
+            width: 700px;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+            padding: 24px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .progress-container {
+            flex: 1;
+            margin-right: 30px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: #e2e8f0;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            position: absolute;
+            height: 100%;
+            background-color: #3b82f6;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .step-markers {
+            position: relative;
+            height: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .step-marker {
+            width: 10px;
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 50%;
+            margin-top: -8px;
+            z-index: 2;
+            transition: background-color 0.3s ease;
+        }
+        
+        .step-marker.active {
+            background-color: #3b82f6;
+        }
+        
+        .step-marker.completed {
+            background-color: #3b82f6;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #94a3b8;
+        }
+        
+        .modal-content {
+            padding: 10px 0 30px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: #1e293b;
+            margin-bottom: 25px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .option-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-card.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+        
+        .option-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .option-image {
+            width: 100%;
+            height: 140px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-bottom: 12px;
+            background-color: #f8fafc;
+        }
+        
+        .option-label {
+            font-size: 16px;
+            color: #334155;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-back {
+            background: none;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+        
+        .btn-back:hover {
+            background-color: #f8fafc;
+        }
+        
+        .btn-next {
+            background-color: #3b82f6;
+            border: none;
+            color: white;
+        }
+        
+        .btn-next:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-next.disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .selected-check {
+            color: white;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+        }
+
+        .validation-message {
+            color: #ef4444;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            height: 20px;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+
+        .validation-message.show {
+            opacity: 1;
+        }
+
+        .quiz-results {
+            text-align: center;
+            padding: 30px 0 40px;
+        }
+
+        .quiz-results h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #3b82f6;
+        }
+
+        .quiz-results p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #475569;
+        }
+
+        .result-summary {
+            background-color: #f8fafc;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(#3b82f6 var(--percentage), #e2e8f0 var(--percentage));
+            margin: 0 auto 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .score-inner {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .career-matches {
+            text-align: left;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 25px;
+        }
+
+        .matches-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #1e293b;
+            text-align: center;
+        }
+
+        .career-item {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .career-info {
+            flex: 1;
+        }
+
+        .career-title {
+            font-weight: 600;
+            font-size: 17px;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .career-match {
+            color: #3b82f6;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .career-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #dbeafe;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+
+        .career-explore {
+            background-color: #dbeafe;
+            color: #3b82f6;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .career-explore:hover {
+            background-color: #bfdbfe;
+        }
+
+        .fade {
+            animation: fadeEffect 0.5s;
+        }
+
+        .shake {
+            animation: shakeEffect 0.5s;
+        }
+
+        @keyframes fadeEffect {
+            from {opacity: 0.4;}
+            to {opacity: 1;}
+        }
+
+        @keyframes shakeEffect {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="modal">
+        <div class="modal-header">
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Question <span id="current-step">1</span> of <span id="total-steps">10</span></span>
+                    <span><span id="progress-percentage">10</span>% Complete</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 10%;"></div>
+                </div>
+                <div class="step-markers" id="step-markers">
+                    <!-- Step markers will be dynamically generated -->
+                </div>
+            </div>
+            <button class="close-button">✕</button>
+        </div>
+        
+        <div class="modal-content" id="question-container">
+            <!-- Question content will be dynamically inserted here -->
+        </div>
+        
+        <div class="validation-message" id="validation-message">Please select an answer before proceeding.</div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-back" id="prev-btn">Previous</button>
+            <button class="btn btn-next" id="next-btn">Next →</button>
+        </div>
+    </div>
+    
+    <script>
+        // Quiz data
+        const quizData = [
+            {
+                question: "Which work environment do you prefer?",
+                options: [
+                    { text: "Traditional 9 to 5", image: "9to5.png" },
+                    { text: "Flexible (Hybrid, Varied Hours)", image: "flex.png" },
+                    { text: "Collaborative Team Setting", image: "collaborative.png" },
+                    { text: "Creative Studio Environment", image: "creative.png" }
+                ]
+            },
+            {
+                question: "How do you prefer to solve problems?",
+                options: [
+                    { text: "Analytical and Methodical", image: "analytical.png" },
+                    { text: "Creative and Innovative", image: "creative-thinking.png" },
+                    { text: "Practical and Hands-on", image: "practical.png" },
+                    { text: "Collaborative and Discussion-based", image: "teamwork.png" }
+                ]
+            },
+            {
+                question: "Which skills would you most like to develop?",
+                options: [
+                    { text: "Technical and Digital Skills", image: "technical.png" },
+                    { text: "Leadership and Management", image: "leadership.png" },
+                    { text: "Creative and Design Skills", image: "design.png" },
+                    { text: "Communication and Interpersonal", image: "communication.png" }
+                ]
+            },
+            {
+                question: "What type of work motivates you most?",
+                options: [
+                    { text: "Helping and Supporting Others", image: "helping.png" },
+                    { text: "Building and Creating Things", image: "building.png" },
+                    { text: "Analyzing and Solving Problems", image: "analyzing.png" },
+                    { text: "Leading and Influencing Others", image: "leading.png" }
+                ]
+            },
+            {
+                question: "What work-life balance preference do you have?",
+                options: [
+                    { text: "Strict Separation Between Work and Personal", image: "separation.png" },
+                    { text: "Flexible Integration of Work and Personal", image: "integration.png" },
+                    { text: "Project-based with Intensive and Relaxed Periods", image: "project.png" },
+                    { text: "Regular Schedule with Moderate Flexibility", image: "regular.png" }
+                ]
+            },
+            {
+                question: "Which industry interests you most?",
+                options: [
+                    { text: "Technology and IT", image: "tech.png" },
+                    { text: "Healthcare and Wellness", image: "healthcare.png" },
+                    { text: "Creative Industries and Media", image: "media.png" },
+                    { text: "Business and Finance", image: "finance.png" }
+                ]
+            },
+            {
+                question: "How important is income potential in your career choice?",
+                options: [
+                    { text: "Very Important - Seeking High Earning Potential", image: "high-income.png" },
+                    { text: "Moderately Important - Balance with Other Factors", image: "balance.png" },
+                    { text: "Less Important - Prioritize Fulfillment", image: "fulfillment.png" },
+                    { text: "Varies - Depends on Life Stage", image: "lifestage.png" }
+                ]
+            },
+            {
+                question: "How do you prefer to learn new skills?",
+                options: [
+                    { text: "Formal Education and Training", image: "formal.png" },
+                    { text: "Self-directed Learning", image: "self-directed.png" },
+                    { text: "On-the-job Experience", image: "on-the-job.png" },
+                    { text: "Mentorship and Guidance", image: "mentorship.png" }
+                ]
+            },
+            {
+                question: "Which work culture appeals to you most?",
+                options: [
+                    { text: "Fast-paced and Innovative", image: "innovative.png" },
+                    { text: "Structured and Organized", image: "structured.png" },
+                    { text: "Supportive and Collaborative", image: "supportive.png" },
+                    { text: "Independent and Autonomous", image: "independent.png" }
+                ]
+            },
+            {
+                question: "What level of responsibility do you prefer?",
+                options: [
+                    { text: "Leadership with Strategic Decision-making", image: "leadership-role.png" },
+                    { text: "Independent Specialist/Expert Role", image: "specialist.png" },
+                    { text: "Team Member with Shared Responsibility", image: "team-member.png" },
+                    { text: "Project Management with Defined Goals", image: "project-management.png" }
+                ]
+            }
+        ];
+
+        // Variables
+        let currentQuestion = 0;
+        const totalQuestions = quizData.length;
+        const userAnswers = Array(totalQuestions).fill(null);
+        
+        // DOM Elements
+        const questionContainer = document.getElementById('question-container');
+        const currentStepEl = document.getElementById('current-step');
+        const totalStepsEl = document.getElementById('total-steps');
+        const progressPercentageEl = document.getElementById('progress-percentage');
+        const progressFillEl = document.querySelector('.progress-fill');
+        const stepMarkersContainer = document.getElementById('step-markers');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const validationMessage = document.getElementById('validation-message');
+        
+        // Initialize the quiz
+        function initQuiz() {
+            // Set total steps
+            totalStepsEl.textContent = totalQuestions;
+            
+            // Create step markers
+            stepMarkersContainer.innerHTML = '';
+            for (let i = 0; i < totalQuestions; i++) {
+                const marker = document.createElement('div');
+                marker.className = i === 0 ? 'step-marker active' : 'step-marker';
+                stepMarkersContainer.appendChild(marker);
+            }
+            
+            // Show first question
+            showQuestion(0);
+            
+            // Disable back button initially
+            prevBtn.disabled = true;
+            prevBtn.style.opacity = '0.5';
+            prevBtn.style.cursor = 'not-allowed';
+            
+            // Update next button state based on whether an answer is selected
+            updateNextButtonState();
+        }
+        
+        // Show a specific question
+        function showQuestion(index) {
+            const question = quizData[index];
+            currentStepEl.textContent = index + 1;
+            
+            // Hide validation message
+            hideValidationMessage();
+            
+            // Update progress
+            const progress = ((index + 1) / totalQuestions) * 100;
+            progressPercentageEl.textContent = Math.round(progress);
+            progressFillEl.style.width = `${progress}%`;
+            
+            // Update step markers
+            const markers = document.querySelectorAll('.step-marker');
+            markers.forEach((marker, i) => {
+                marker.className = 'step-marker';
+                if (i < index) {
+                    marker.classList.add('completed');
+                } else if (i === index) {
+                    marker.classList.add('active');
+                }
+            });
+            
+            // Build question HTML with actual image paths where available
+            const html = `
+                <h1 class="fade">${question.question}</h1>
+                <div class="options fade">
+                    ${question.options.map((option, i) => {
+                        // Use actual image path for 9to5.png and flex.png, placeholders for others
+                        let imgSrc;
+                        if (option.image === "9to5.png" || option.image === "flex.png" || option.image === "collaborative.png" || option.image === "creative.png" || option.image === "analytical.png" || option.image === "creative-thinking.png" || option.image === "practical.png" || option.image === "teamwork.png" ) {
+                            imgSrc = option.image;
+                        } else {
+                            imgSrc = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="#dbeafe"/><text x="50%" y="50%" font-family="Arial" font-size="16" fill="#3b82f6" text-anchor="middle" dominant-baseline="middle">${option.text}</text></svg>'.replace('${option.text}', option.text))}`;
+                        }
+                        
+                        return `
+                            <div class="option-card ${userAnswers[index] === i ? 'selected' : ''}" data-index="${i}">
+                                ${userAnswers[index] === i ? '<div class="selected-check">✓</div>' : ''}
+                                <img src="${imgSrc}" alt="${option.text}" class="option-image">
+                                <div class="option-label">${option.text}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            
+            questionContainer.innerHTML = html;
+            
+            // Add click event to options
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const optionIndex = parseInt(this.getAttribute('data-index'));
+                    selectAnswer(optionIndex);
+                });
+            });
+            
+            // Update navigation buttons
+            prevBtn.disabled = index === 0;
+            prevBtn.style.opacity = index === 0 ? '0.5' : '1';
+            prevBtn.style.cursor = index === 0 ? 'not-allowed' : 'pointer';
+            
+            // Update next button text for last question
+            if (index === totalQuestions - 1) {
+                nextBtn.textContent = 'See Results';
+            } else {
+                nextBtn.textContent = 'Next →';
+            }
+            
+            // Update next button state
+            updateNextButtonState();
+        }
+        
+        // Select an answer
+        function selectAnswer(optionIndex) {
+            userAnswers[currentQuestion] = optionIndex;
+            hideValidationMessage();
+            
+            // Update UI to show selected
+            document.querySelectorAll('.option-card').forEach((card, i) => {
+                if (i === optionIndex) {
+                    card.classList.add('selected');
+                    
+                    // Add check mark if not present
+                    if (!card.querySelector('.selected-check')) {
+                        const checkMark = document.createElement('div');
+                        checkMark.className = 'selected-check';
+                        checkMark.textContent = '✓';
+                        card.appendChild(checkMark);
+                    }
+                } else {
+                    card.classList.remove('selected');
+                    
+                    // Remove check mark if present
+                    const checkMark = card.querySelector('.selected-check');
+                    if (checkMark) {
+                        checkMark.remove();
+                    }
+                }
+            });
+            
+            // Enable next button since an answer is selected
+            updateNextButtonState();
+        }
+        
+        // Update next button state based on whether an answer is selected
+        function updateNextButtonState() {
+            if (userAnswers[currentQuestion] === null) {
+                nextBtn.classList.add('disabled');
+            } else {
+                nextBtn.classList.remove('disabled');
+            }
+        }
+        
+        // Show validation message
+        function showValidationMessage() {
+            validationMessage.classList.add('show');
+            validationMessage.classList.add('shake');
+            setTimeout(() => {
+                validationMessage.classList.remove('shake');
+            }, 500);
+        }
+        
+        // Hide validation message
+        function hideValidationMessage() {
+            validationMessage.classList.remove('show');
+        }
+        
+        // Show career pathway results
+        function showResults() {
+            // Analyze answers to determine career matches (in a real app, this would be more sophisticated)
+            const careerMatches = [
+                {
+                    title: "Data Science & Analytics",
+                    match: "94% Match",
+                    icon: "📊"
+                },
+                {
+                    title: "UX/UI Design",
+                    match: "87% Match",
+                    icon: "🎨"
+                },
+                {
+                    title: "Project Management",
+                    match: "83% Match", 
+                    icon: "📋"
+                },
+                {
+                    title: "Digital Marketing",
+                    match: "78% Match",
+                    icon: "📱"
+                }
+            ];
+            
+            // Create HTML for career matches
+            let matchesHTML = '';
+            careerMatches.forEach(career => {
+                matchesHTML += `
+                    <div class="career-item">
+                        <div style="display: flex; align-items: center;">
+                            <div class="career-icon">${career.icon}</div>
+                            <div class="career-info">
+                                <div class="career-title">${career.title}</div>
+                                <div class="career-match">${career.match}</div>
+                            </div>
+                        </div>
+                        <button class="career-explore">Explore Career</button>
+                    </div>
+                `;
+            });
+            
+            const html = `
+                <div class="quiz-results fade">
+                    <h2>Your Career Pathway Assessment</h2>
+                    <div class="result-summary">
+                        <p>Based on your responses, we've identified career paths that align with your preferences, skills, and work style.</p>
+                    </div>
+                    <div class="career-matches">
+                        <h3 class="matches-title">Your Top Career Matches</h3>
+                        ${matchesHTML}
+                    </div>
+                </div>
+            `;
+            
+            questionContainer.innerHTML = html;
+            
+            // Add event listeners to explore buttons
+            document.querySelectorAll('.career-explore').forEach(button => {
+                button.addEventListener('click', function() {
+                    const careerTitle = this.parentElement.querySelector('.career-title').textContent;
+                    alert(`Exploring ${careerTitle} career path details! (In a complete app, this would open detailed career information)`);
+                });
+            });
+            
+            // Hide validation message and update navigation buttons
+            hideValidationMessage();
+            prevBtn.style.display = 'none';
+            nextBtn.textContent = 'Detailed Report';
+            nextBtn.addEventListener('click', function() {
+                alert('Generating your detailed career pathway report! (In a complete app, this would show a comprehensive report)');
+            });
+        }
+        
+        // Event Listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            // Check if an answer is selected
+            if (userAnswers[currentQuestion] === null) {
+                showValidationMessage();
+                return;
+            }
+            
+            if (currentQuestion < totalQuestions - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            } else {
+                showResults();
+            }
+        });
+        
+        document.querySelector('.close-button').addEventListener('click', () => {
+            if (confirm('Are you sure you want to exit the assessment? Your progress will not be saved.')) {
+                alert('Assessment closed! (In a real application, this would return to the main platform)');
+            }
+        });
+        
+        // Initialize the quiz when the page loads
+        initQuiz();
+    </script>
+</body>
+</html>
