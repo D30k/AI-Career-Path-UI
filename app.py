@@ -4,7 +4,7 @@ import requests
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # Directly set your Hugging Face API key
-HUGGINGFACE_API_KEY = "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"
+HUGGINGFACE_API_KEY = "*"
 MISTRAL_ENDPOINT = 'https://api-inference.huggingface.co/models/mistralai/Mistral-8x7B-Instruct-v0.1'
 
 # Home route
