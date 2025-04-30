@@ -200,10 +200,62 @@
             .catch(e=> alert('Error: '+e));
         }
 
-        function displayResult(text) {
-            questionContainer.innerHTML = `<div class="quiz-results"><h2>Your AI Recommendations</h2><pre>${text}</pre></div>`;
-            document.querySelector('.modal-footer').style.display='none';
+        function displayResult(data) {
+            if (!data || !data.recommendations || data.recommendations.length === 0) {
+                questionContainer.innerHTML = `<p style="color:red;">No recommendations found. Try again.</p>`;
+                return;
+            }
+        
+            let resultsHTML = `
+                <div class="quiz-results">
+                    <h2>Your Career Pathway Assessment</h2>
+                    <p>Based on your responses, here are the best career matches:</p>
+                    <h3 style="margin-top:30px;">Top Matches</h3>
+            `;
+        
+            data.recommendations.forEach(rec => {
+                resultsHTML += `
+                    <div class="career-match">
+                        <div class="career-info">
+                            <h4>${rec.career}</h4>
+                            <p style="color:#3b82f6;">${rec.match}% Match</p>
+                        </div>
+                        <div class="learn-more"><a href="#">Explore Career</a></div>
+                    </div>
+                `;
+            });
+        
+            resultsHTML += `
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-next">Detailed Report</button>
+                </div>
+                </div>
+            `;
+        
+            questionContainer.innerHTML = resultsHTML;
+            document.querySelector('.modal-footer').style.display = 'none';
         }
+        
+
+        function askFollowUp() {
+            const input = document.getElementById("followup-input").value.trim();
+            if (!input) return;
+        
+            fetch("/follow-up", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ followup: input })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("followup-response").innerText = data.response || "No answer received.";
+            })
+            .catch(err => {
+                document.getElementById("followup-response").innerText = "Error: " + err.message;
+            });
+        }
+        
+        
 
         prevBtn.addEventListener('click', ()=>{
             if(currentQuestion>0) showQuestion(currentQuestion-1);

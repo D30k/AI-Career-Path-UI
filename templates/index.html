@@ -862,9 +862,17 @@
                 </ul>
             </nav>
             <div class="auth-buttons">
-                <button class="btn btn-outline">Sign In</button>
-                <button class="btn btn-primary">Sign Up</button>
+                {% if session.email %}
+                    <span style="margin-right: 10px; font-weight: bold;">👤 {{ session.email }}</span>
+                    <a href="{{ url_for('logout') }}">
+                        <button class="btn btn-outline">Logout</button>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}"><button class="btn btn-outline">Sign In</button></a>
+                    <a href="{{ url_for('register') }}"><button class="btn btn-primary">Sign Up</button></a>
+                {% endif %}
             </div>
+            
         </div>
     </header>
 
