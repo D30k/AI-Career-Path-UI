@@ -1,66 +1,166 @@
 from flask import Flask, render_template, request, jsonify
 import requests
 import os
+from dotenv import load_dotenv
+import sqlite3
+from flask import session, redirect, url_for
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+from flask import session, redirect, url_for
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
-# Directly set your Hugging Face API key
+
+
+
+# Load environment variables (Hugging Face API key)
+load_dotenv()
+
+
+app = Flask(__name__, template_folder="templates", static_folder="static")
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_dev_key")
+
+# Hugging Face configuration
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-MISTRAL_ENDPOINT = 'https://api-inference.huggingface.co/models/mistralai/Mistral-8x7B-Instruct-v0.1'
+MODEL_ENDPOINT = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
 
-# Home route
+
+
+
+# ------------------ ROUTES ------------------ #
+
 @app.route('/')
-def index():
-    return render_template('index.html')
+def home():
+    if 'user_id' in session:
+        return render_template('index.html')  # User is logged in
+    else:
+        return redirect(url_for('login'))     # Force login first
 
-# Serve the quiz page
+
 @app.route('/quiz')
+@login_required
 def quiz():
     return render_template('quiz.html')
 
-# Endpoint to receive quiz answers and query LLM
+
 @app.route('/submit-quiz', methods=['POST'])
 def submit_quiz():
-    data = request.json or {}
-    answers = data.get('answers', {})
+    data = request.json
+    answers = data.get("answers", {})
     if not answers:
-        return jsonify({'error': 'No answers provided'}), 400
+        return jsonify({"error": "No answers received."}), 400
 
-    # Build prompt for Mistral
     prompt = build_prompt(answers)
-
-    # Query the Mistral model
     try:
-        ai_text = query_mistral(prompt)
+        result = query_mistral(prompt)
+        return jsonify({"result": result})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-    # Return the AI-generated recommendation
-    return jsonify({'result': ai_text})
+@app.route('/follow-up', methods=['POST'])
+def follow_up():
+    data = request.json
+    question = data.get("followup", "").strip()
+    if not question:
+        return jsonify({"error": "No question received"}), 400
 
-# Construct the prompt based on user answers
-def build_prompt(answers: dict) -> str:
-    lines = ['The following are behavioral answers from a student:']
+    prompt = f"You are a career guidance expert AI. Answer the user's follow-up question below.\n\nQuestion: \"{question}\"\n\nGive a thoughtful and helpful response."
+    try:
+        result = query_mistral(prompt)
+        return jsonify({"response": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        conn = sqlite3.connect('users.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE email=?", (email,))
+        user = c.fetchone()
+        conn.close()
+        if user and check_password_hash(user[2], password):
+            session['user_id'] = user[0]
+            session['email'] = user[1]
+            return redirect(url_for('home'))
+        else:
+            return render_template('login.html', error="Invalid credentials")
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        hashed = generate_password_hash(password)
+        try:
+            conn = sqlite3.connect('users.db')
+            c = conn.cursor()
+            c.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, hashed))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
+            return render_template('register.html', error="Email already exists")
+    return render_template('register.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
+
+# ------------------ HELPERS ------------------ #
+
+def build_prompt(answers):
+    lines = [
+        "You are a career advisor AI.",
+        "Based on the user's behavioral answers, recommend 3 to 5 career paths with a confidence percentage (e.g., 87%) for each.",
+        "Format each career on a new line like:",
+        "- Career Name: 87% match",
+        "Add no extra explanation. Begin directly with the list.",
+        "",
+        "User's behavioral answers:"
+    ]
     for question, answer in answers.items():
-        lines.append(f"- {question}: \"{answer}\"")
-    lines.append('')
-    lines.append('Based on these preferences, suggest 3 suitable career paths, 3 professional goals, and 3 universities worldwide where this student would thrive. Provide detailed explanations for each.')
-    return '\n'.join(lines)
+        lines.append(f"- {question}: {answer}")
+    return "\n".join(lines)
 
-# Call Hugging Face inference API
-def query_mistral(prompt: str) -> str:
+
+import re
+
+def query_mistral(prompt):
     headers = {
-        'Authorization': f'Bearer {HUGGINGFACE_API_KEY}',
-        'Content-Type': 'application/json'
+        "Authorization": f"Bearer {HUGGINGFACE_API_KEY}",
+        "Content-Type": "application/json"
     }
-    payload = {'inputs': prompt}
-    response = requests.post(MISTRAL_ENDPOINT, headers=headers, json=payload, timeout=60)
+    response = requests.post(MODEL_ENDPOINT, headers=headers, json={"inputs": prompt})
     response.raise_for_status()
-    output = response.json()
-    # Extract generated text
-    if isinstance(output, list) and 'generated_text' in output[0]:
-        return output[0]['generated_text']
-    return output.get('generated_text', str(output))
+
+    result = response.json()
+    text = result[0].get("generated_text", "")
+
+    print("🔍 Raw LLM output:\n", text)
+
+    # Updated regex
+    pattern = r"-\s*(.*?):\s*(\d{1,3})% match"
+    matches = re.findall(pattern, text, re.IGNORECASE)
+    print("🧪 Matches found:", matches)
+
+    structured = [{"career": name.strip(), "match": int(percent)} for name, percent in matches]
+    return {"recommendations": structured}
+
+
+
+
+# ------------------ START APP ------------------ #
 
 if __name__ == '__main__':
     app.run(debug=True)
