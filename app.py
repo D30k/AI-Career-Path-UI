@@ -5,19 +5,11 @@ from dotenv import load_dotenv
 import sqlite3
 from flask import session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
+
 from flask import session, redirect, url_for
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-
+from modules.auth.utils import login_required
+from modules.auth.routes import auth
 
 # Load environment variables (Hugging Face API key)
 load_dotenv()
@@ -31,8 +23,6 @@ HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 MODEL_ENDPOINT = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
 
 
-
-
 # ------------------ ROUTES ------------------ #
 
 @app.route('/')
@@ -40,7 +30,7 @@ def home():
     if 'user_id' in session:
         return render_template('index.html')  # User is logged in
     else:
-        return redirect(url_for('login'))     # Force login first
+        return redirect(url_for('auth.login'))     # Force login first
 
 
 @app.route('/quiz')
@@ -76,46 +66,6 @@ def follow_up():
         return jsonify({"response": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        conn = sqlite3.connect('users.db')
-        c = conn.cursor()
-        c.execute("SELECT * FROM users WHERE email=?", (email,))
-        user = c.fetchone()
-        conn.close()
-        if user and check_password_hash(user[2], password):
-            session['user_id'] = user[0]
-            session['email'] = user[1]
-            return redirect(url_for('home'))
-        else:
-            return render_template('login.html', error="Invalid credentials")
-    return render_template('login.html')
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        hashed = generate_password_hash(password)
-        try:
-            conn = sqlite3.connect('users.db')
-            c = conn.cursor()
-            c.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, hashed))
-            conn.commit()
-            conn.close()
-            return redirect(url_for('login'))
-        except sqlite3.IntegrityError:
-            return render_template('register.html', error="Email already exists")
-    return render_template('register.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('home'))
 
 # ------------------ HELPERS ------------------ #
 
@@ -158,6 +108,7 @@ def query_mistral(prompt):
     return {"recommendations": structured}
 
 
+app.register_blueprint(auth)
 
 
 # ------------------ START APP ------------------ #

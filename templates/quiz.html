@@ -1,383 +1,586 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Career Pathway AI - Career Assessment Quiz</title>
     <style>
-        /* All existing styles retained */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; }
-        body { background-color: #f0f9ff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .modal { background-color: white; border-radius: 10px; width: 700px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15); padding: 24px; }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
-        .progress-container { flex: 1; margin-right: 30px; }
-        .progress-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; color: #64748b; }
-        .progress-bar { height: 6px; background-color: #e2e8f0; border-radius: 3px; position: relative; overflow: hidden; }
-        .progress-fill { position: absolute; height: 100%; background-color: #3b82f6; border-radius: 3px; transition: width 0.3s ease; }
-        .step-markers { position: relative; height: 10px; display: flex; justify-content: space-between; }
-        .step-marker { width: 10px; height: 10px; background-color: #e2e8f0; border-radius: 50%; margin-top: -8px; z-index: 2; transition: background-color 0.3s ease; }
-        .step-marker.active { background-color: #3b82f6; }
-        .step-marker.completed { background-color: #3b82f6; }
-        .close-button { background: none; border: none; cursor: pointer; font-size: 16px; color: #94a3b8; }
-        .modal-content { padding: 10px 0 30px; }
-        h1 { font-size: 24px; color: #1e293b; margin-bottom: 25px; font-weight: 500; text-align: center; }
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
-        .option-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
-        .option-card.selected { border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; }
-        .option-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
-        .option-image { width: 100%; height: 140px; border-radius: 6px; object-fit: cover; margin-bottom: 12px; background-color: #f8fafc; }
-        .option-label { font-size: 16px; color: #334155; text-align: center; font-weight: 500; }
-        .modal-footer { display: flex; justify-content: space-between; margin-top: 20px; }
-        .btn { padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-        .btn-back { background: none; border: 1px solid #e2e8f0; color: #64748b; }
-        .btn-back:hover { background-color: #f8fafc; }
-        .btn-next { background-color: #3b82f6; border: none; color: white; }
-        .btn-next.disabled { background-color: #cbd5e1; cursor: not-allowed; }
-        .validation-message { color: #ef4444; text-align: center; margin-top: 15px; font-size: 14px; height: 20px; transition: opacity 0.3s; opacity: 0; }
-        .validation-message.show { opacity: 1; }
-        .quiz-results { text-align: center; padding: 30px 0 40px; }
-        .quiz-results h2 { font-size: 28px; margin-bottom: 20px; color: #3b82f6; }
-        .quiz-results pre { text-align: left; white-space: pre-wrap; word-wrap: break-word; color: #475569; }
+      /* All existing styles retained */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      }
+      body {
+        background-color: #f0f9ff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .modal {
+        background-color: white;
+        border-radius: 10px;
+        width: 700px;
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+        padding: 24px;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+      }
+      .progress-container {
+        flex: 1;
+        margin-right: 30px;
+      }
+      .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 12px;
+        color: #64748b;
+      }
+      .progress-bar {
+        height: 6px;
+        background-color: #e2e8f0;
+        border-radius: 3px;
+        position: relative;
+        overflow: hidden;
+      }
+      .progress-fill {
+        position: absolute;
+        height: 100%;
+        background-color: #3b82f6;
+        border-radius: 3px;
+        transition: width 0.3s ease;
+      }
+      .step-markers {
+        position: relative;
+        height: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .step-marker {
+        width: 10px;
+        height: 10px;
+        background-color: #e2e8f0;
+        border-radius: 50%;
+        margin-top: -8px;
+        z-index: 2;
+        transition: background-color 0.3s ease;
+      }
+      .step-marker.active {
+        background-color: #3b82f6;
+      }
+      .step-marker.completed {
+        background-color: #3b82f6;
+      }
+      .close-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        color: #94a3b8;
+      }
+      .modal-content {
+        padding: 10px 0 30px;
+      }
+      h1 {
+        font-size: 24px;
+        color: #1e293b;
+        margin-bottom: 25px;
+        font-weight: 500;
+        text-align: center;
+      }
+      .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 30px;
+      }
+      .option-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+      .option-card.selected {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 1px #3b82f6;
+      }
+      .option-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .option-image {
+        width: 100%;
+        height: 140px;
+        border-radius: 6px;
+        object-fit: cover;
+        margin-bottom: 12px;
+        background-color: #f8fafc;
+      }
+      .option-label {
+        font-size: 16px;
+        color: #334155;
+        text-align: center;
+        font-weight: 500;
+      }
+      .modal-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+      .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+      .btn-back {
+        background: none;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+      }
+      .btn-back:hover {
+        background-color: #f8fafc;
+      }
+      .btn-next {
+        background-color: #3b82f6;
+        border: none;
+        color: white;
+      }
+      .btn-next.disabled {
+        background-color: #cbd5e1;
+        cursor: not-allowed;
+      }
+      .validation-message {
+        color: #ef4444;
+        text-align: center;
+        margin-top: 15px;
+        font-size: 14px;
+        height: 20px;
+        transition: opacity 0.3s;
+        opacity: 0;
+      }
+      .validation-message.show {
+        opacity: 1;
+      }
+      .quiz-results {
+        text-align: center;
+        padding: 30px 0 40px;
+      }
+      .quiz-results h2 {
+        font-size: 28px;
+        margin-bottom: 20px;
+        color: #3b82f6;
+      }
+      .quiz-results pre {
+        text-align: left;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        color: #475569;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="modal">
-        <div class="modal-header">
-            <div class="progress-container">
-                <div class="progress-label">
-                    <span>Question <span id="current-step">1</span> of <span id="total-steps">10</span></span>
-                    <span><span id="progress-percentage">10</span>% Complete</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 10%;"></div>
-                </div>
-                <div class="step-markers" id="step-markers"></div>
-            </div>
-            <button class="close-button" onclick="window.location='/'">✕</button>
+      <div class="modal-header">
+        <div class="progress-container">
+          <div class="progress-label">
+            <span
+              >Question <span id="current-step">1</span> of
+              <span id="total-steps">10</span></span
+            >
+            <span><span id="progress-percentage">10</span>% Complete</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 10%"></div>
+          </div>
+          <div class="step-markers" id="step-markers"></div>
         </div>
-        <div class="modal-content" id="question-container"></div>
-        <div class="validation-message" id="validation-message">Please select an answer before proceeding.</div>
-        <div class="modal-footer">
-            <button class="btn btn-back" id="prev-btn">Previous</button>
-            <button class="btn btn-next disabled" id="next-btn">Next →</button>
-        </div>
+        <button class="close-button" onclick="window.location='/'">✕</button>
+      </div>
+      <div class="modal-content" id="question-container"></div>
+      <div class="validation-message" id="validation-message">
+        Please select an answer before proceeding.
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-back" id="prev-btn">Previous</button>
+        <button class="btn btn-next disabled" id="next-btn">Next →</button>
+      </div>
     </div>
 
     <script>
-        const quizData = [
-  {
-    "question": "Which work environment do you prefer?",
-    "options": [
-      {
-        "text": "Traditional 9 to 5",
-        "image": "https://images.pexels.com/photos/3182763/pexels-photo-3182763.jpeg"
-      },
-      {
-        "text": "Flexible (Hybrid, Varied Hours)",
-        "image": "https://images.pexels.com/photos/4050291/pexels-photo-4050291.jpeg"
-      },
-      {
-        "text": "Collaborative Team Setting",
-        "image": "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg"
-      },
-      {
-        "text": "Creative Studio Environment",
-        "image": "https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg"
-      }
-    ]
-  },
-  {
-    "question": "How do you prefer to solve problems?",
-    "options": [
-      {
-        "text": "Analytical and Methodical",
-        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRf0Y3fLp4v4FFVZWS4_fd9AnunHDZMvEGcMg&s"
-      },
-      {
-        "text": "Creative and Innovative",
-        "image": "https://images.pexels.com/photos/3184466/pexels-photo-3184466.jpeg"
-      },
-      {
-        "text": "Practical and Hands-on",
-        "image": "https://images.pexels.com/photos/3184467/pexels-photo-3184467.jpeg"
-      },
-      {
-        "text": "Collaborative and Discussion-based",
-        "image": "https://images.pexels.com/photos/3184468/pexels-photo-3184468.jpeg"
-      }
-    ]
-  },
-  {
-    "question": "Which skills would you most like to develop?",
-    "options": [
-      {
-        "text": "Technical and Digital Skills",
-        "image": "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg"
-      },
-      {
-        "text": "Leadership and Management",
-        "image": "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg"
-      },
-      {
-        "text": "Creative and Design Skills",
-        "image": "https://images.pexels.com/photos/3184419/pexels-photo-3184419.jpeg"
-      },
-      {
-        "text": "Communication and Interpersonal",
-        "image": "https://images.pexels.com/photos/3184420/pexels-photo-3184420.jpeg"
-      }
-    ]
-  },
-  {
-    "question": "What type of work motivates you most?",
-    "options": [
-      {
-        "text": "Helping and Supporting Others",
-        "image": "https://images.pexels.com/photos/3184421/pexels-photo-3184421.jpeg"
-      },
-      {
-        "text": "Building and Creating Things",
-        "image": "https://images.pexels.com/photos/3184422/pexels-photo-3184422.jpeg"
-      },
-      {
-        "text": "Analyzing and Solving Problems",
-        "image": "https://images.pexels.com/photos/3184423/pexels-photo-3184423.jpeg"
-      },
-      {
-        "text": "Leading and Influencing Others",
-        "image": "https://images.pexels.com/photos/3184424/pexels-photo-3184424.jpeg"
-      }
-    ]
-  },
-  {
-    "question": "What work-life balance preference do you have?",
-    "options": [
-      {
-        "text": "Strict Separation Between Work and Personal",
-        "image": "https://images.pexels.com/photos/3184425/pexels-photo-3184425.jpeg"
-      },
-      {
-        "text": "Flexible Integration of Work and Personal",
-        "image": "https://images.pexels.com/photos/3184426/pexels-photo-3184426.jpeg"
-      },
-      {
-        "text": "Project-based with Intensive and Relaxed Periods",
-        "image": "https://images.pexels.com/photos/3184427/pexels-photo-3184427.jpeg"
-      },
-      {
-        "text": "Regular Schedule with Moderate Flexibility",
-        "image": "https://images.pexels.com/photos/3184428/pexels-photo-3184428.jpeg"
-      }
-    ]
-  },
-  {
-    "question": "Which industry interests you most?",
-    "options": [
-      {
-        "text": "Technology and IT",
-        "image": "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg"
-      },
-      {
-        "text": "Healthcare and Wellness",
-        "image": "https://ideausher.com/wp-content/uploads/2022/04/covr-image-5_result.webp"
-      },
-      {
-        "text": "Creative Industries and Media",
-        "image": "https://images.pexels.com/photos/3184430/pexels-photo-3184430.jpeg"
-      },
-      {
-        "text": "Business and Finance",
-        "image": "https://images.pexels.com/photos/3184431/pexels-photo-3184431.jpeg"
-      }
-    ]
-  },
-  {
-    "question": "How important is income potential in your career choice?",
-    "options": [
-      {
-        "text": "Very Important - Seeking High Earning Potential",
-        "image": "https://images.pexels.com/photos/3184432/pexels-photo-3184432.jpeg"
-      },
-      {
-        "text": "Moderately Important - Balance with Other Factors",
-        "image": "https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg"
-      },
-      {
-        "text": "Less Important - Prioritize Fulfillment",
-        "image": "https://images.pexels.com/photos/3184434/pexels-photo-3184434.jpeg"
-      },
-      {
-        "text": "Varies - Depends on Life Stage",
-        "image": "https://images.pexels.com/photos/3184435/pexels-photo-3184435.jpeg"
-      }
-    ]
-  },
-  {
-    "question": "How do you prefer to learn new skills?",
-    "options": [
-      {
-        "text": "Formal Education and Training",
-        "image": "https://images.pexels.com/photos/3184436/pexels-photo-3184436.jpeg"
-      },
-      {
-        "text": "Self-directed Learning",
-        "image": "https://lh3.googleusercontent.com/fFFcf10KGkxEbH1omC5L5p3IGLOZR0rWeR4KqagrhQ-jPP6jMpSbh6_r2OmhE1ebFVKM-FuswWDgM_DAL97X0Kk1PNApnMplox-3IDVlYNsh0ZZeW98a2KMyWR1GP2sveZCJTjCEGTzexogUcNVpWQ"
-      },
-      {
-        "text": "On-the-job Experience",
-        "image": "https://images.pexels.com/photos/3184438/pexels-photo-3184438.jpeg"
-      },
-      {
-        "text": "Mentorship and Guidance",
-        "image": "https://cdn.prod.website-files.com/5ce11396d0cadb67eb2cac0e/62f3e1cb449f5e430cd169b9_Online%20mentoring%20platform%20(1).png"
-      }
-    ]
-  },
-  {
-    "question": "Which work culture appeals to you most?",
-    "options": [
-      {
-        "text": "Fast-paced and Innovative",
-        "image": "https://www.lukechaffey.com.au/wp-content/uploads/The-Innovation-Mindset-How-to-Thrive-in-a-World-of-Rapid-Change.jpg"
-      },
-      {
-        "text": "Structured and Organized",
-        "image": "https://media.licdn.com/dms/image/v2/D4E12AQG5OoNLJlErIw/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1663665841277?e=2147483647&v=beta&t=X_-nklxFJOAKYm4JzwfsNLE9zx5PCIH3A91x9994TlY"
-      },
-      {
-        "text": "Supportive and Collaborative",
-        "image": "https://www.psychologs.com/wp-content/uploads/2023/03/How-We-Flourish-In-a-Supportive-Work-Environment.jpg"
-      },
-      {
-        "text": "Independent and Autonomous",
-        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4DNpqat5l8zwL2rg1fIRWEavE5szvuVDNApXraF-Sqmm1tnyxhMezaAUwx-u-o2VHzZU&usqp=CAU"
-      }
-    ]
-  },
-  {
-    "question": "What level of responsibility do you prefer?",
-    "options": [
-      {
-        "text": "Leadership with Strategic Decision-making",
-        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkm1rIfbtp7u4oMKoSTKX1DAOfZrylm-k6aA&s"
-      },
-      {
-        "text": "Independent Specialist/Expert Role",
-        "image": "https://lsj.com.au/wp-content/uploads/2022/02/header-Family-1180x560.jpg"
-      },
-      {
-        "text": "Team Member with Shared Responsibility",
-        "image": "https://taskbulletuniversity.com/wp-content/uploads/2024/01/10-8-1024x538.png"
-      },
-      {
-        "text": "Project Management with Defined Goals",
-        "image": "https://www.aim.com.au/sites/default/files/AIM-Blogs-How-Project-Management-Can-Be-Your-Game-Changer.png"
-      }
-    ]
-  }
-]
+      const quizData = [
+        {
+          question: "Which work environment do you prefer?",
+          options: [
+            {
+              text: "Traditional 9 to 5",
+              image:
+                "https://images.pexels.com/photos/3182763/pexels-photo-3182763.jpeg",
+            },
+            {
+              text: "Flexible (Hybrid, Varied Hours)",
+              image:
+                "https://images.pexels.com/photos/4050291/pexels-photo-4050291.jpeg",
+            },
+            {
+              text: "Collaborative Team Setting",
+              image:
+                "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg",
+            },
+            {
+              text: "Creative Studio Environment",
+              image:
+                "https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg",
+            },
+          ],
+        },
+        {
+          question: "How do you prefer to solve problems?",
+          options: [
+            {
+              text: "Analytical and Methodical",
+              image:
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRf0Y3fLp4v4FFVZWS4_fd9AnunHDZMvEGcMg&s",
+            },
+            {
+              text: "Creative and Innovative",
+              image:
+                "https://images.pexels.com/photos/3184466/pexels-photo-3184466.jpeg",
+            },
+            {
+              text: "Practical and Hands-on",
+              image:
+                "https://images.pexels.com/photos/3184467/pexels-photo-3184467.jpeg",
+            },
+            {
+              text: "Collaborative and Discussion-based",
+              image:
+                "https://images.pexels.com/photos/3184468/pexels-photo-3184468.jpeg",
+            },
+          ],
+        },
+        {
+          question: "Which skills would you most like to develop?",
+          options: [
+            {
+              text: "Technical and Digital Skills",
+              image:
+                "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",
+            },
+            {
+              text: "Leadership and Management",
+              image:
+                "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg",
+            },
+            {
+              text: "Creative and Design Skills",
+              image:
+                "https://images.pexels.com/photos/3184419/pexels-photo-3184419.jpeg",
+            },
+            {
+              text: "Communication and Interpersonal",
+              image:
+                "https://images.pexels.com/photos/3184420/pexels-photo-3184420.jpeg",
+            },
+          ],
+        },
+        {
+          question: "What type of work motivates you most?",
+          options: [
+            {
+              text: "Helping and Supporting Others",
+              image:
+                "https://images.pexels.com/photos/3184421/pexels-photo-3184421.jpeg",
+            },
+            {
+              text: "Building and Creating Things",
+              image:
+                "https://images.pexels.com/photos/3184422/pexels-photo-3184422.jpeg",
+            },
+            {
+              text: "Analyzing and Solving Problems",
+              image:
+                "https://images.pexels.com/photos/3184423/pexels-photo-3184423.jpeg",
+            },
+            {
+              text: "Leading and Influencing Others",
+              image:
+                "https://images.pexels.com/photos/3184424/pexels-photo-3184424.jpeg",
+            },
+          ],
+        },
+        {
+          question: "What work-life balance preference do you have?",
+          options: [
+            {
+              text: "Strict Separation Between Work and Personal",
+              image:
+                "https://images.pexels.com/photos/3184425/pexels-photo-3184425.jpeg",
+            },
+            {
+              text: "Flexible Integration of Work and Personal",
+              image:
+                "https://images.pexels.com/photos/3184426/pexels-photo-3184426.jpeg",
+            },
+            {
+              text: "Project-based with Intensive and Relaxed Periods",
+              image:
+                "https://images.pexels.com/photos/3184427/pexels-photo-3184427.jpeg",
+            },
+            {
+              text: "Regular Schedule with Moderate Flexibility",
+              image:
+                "https://images.pexels.com/photos/3184428/pexels-photo-3184428.jpeg",
+            },
+          ],
+        },
+        {
+          question: "Which industry interests you most?",
+          options: [
+            {
+              text: "Technology and IT",
+              image:
+                "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",
+            },
+            {
+              text: "Healthcare and Wellness",
+              image:
+                "https://ideausher.com/wp-content/uploads/2022/04/covr-image-5_result.webp",
+            },
+            {
+              text: "Creative Industries and Media",
+              image:
+                "https://images.pexels.com/photos/3184430/pexels-photo-3184430.jpeg",
+            },
+            {
+              text: "Business and Finance",
+              image:
+                "https://images.pexels.com/photos/3184431/pexels-photo-3184431.jpeg",
+            },
+          ],
+        },
+        {
+          question: "How important is income potential in your career choice?",
+          options: [
+            {
+              text: "Very Important - Seeking High Earning Potential",
+              image:
+                "https://images.pexels.com/photos/3184432/pexels-photo-3184432.jpeg",
+            },
+            {
+              text: "Moderately Important - Balance with Other Factors",
+              image:
+                "https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg",
+            },
+            {
+              text: "Less Important - Prioritize Fulfillment",
+              image:
+                "https://images.pexels.com/photos/3184434/pexels-photo-3184434.jpeg",
+            },
+            {
+              text: "Varies - Depends on Life Stage",
+              image:
+                "https://images.pexels.com/photos/3184435/pexels-photo-3184435.jpeg",
+            },
+          ],
+        },
+        {
+          question: "How do you prefer to learn new skills?",
+          options: [
+            {
+              text: "Formal Education and Training",
+              image:
+                "https://images.pexels.com/photos/3184436/pexels-photo-3184436.jpeg",
+            },
+            {
+              text: "Self-directed Learning",
+              image:
+                "https://lh3.googleusercontent.com/fFFcf10KGkxEbH1omC5L5p3IGLOZR0rWeR4KqagrhQ-jPP6jMpSbh6_r2OmhE1ebFVKM-FuswWDgM_DAL97X0Kk1PNApnMplox-3IDVlYNsh0ZZeW98a2KMyWR1GP2sveZCJTjCEGTzexogUcNVpWQ",
+            },
+            {
+              text: "On-the-job Experience",
+              image:
+                "https://images.pexels.com/photos/3184438/pexels-photo-3184438.jpeg",
+            },
+            {
+              text: "Mentorship and Guidance",
+              image:
+                "https://cdn.prod.website-files.com/5ce11396d0cadb67eb2cac0e/62f3e1cb449f5e430cd169b9_Online%20mentoring%20platform%20(1).png",
+            },
+          ],
+        },
+        {
+          question: "Which work culture appeals to you most?",
+          options: [
+            {
+              text: "Fast-paced and Innovative",
+              image:
+                "https://www.lukechaffey.com.au/wp-content/uploads/The-Innovation-Mindset-How-to-Thrive-in-a-World-of-Rapid-Change.jpg",
+            },
+            {
+              text: "Structured and Organized",
+              image:
+                "https://media.licdn.com/dms/image/v2/D4E12AQG5OoNLJlErIw/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1663665841277?e=2147483647&v=beta&t=X_-nklxFJOAKYm4JzwfsNLE9zx5PCIH3A91x9994TlY",
+            },
+            {
+              text: "Supportive and Collaborative",
+              image:
+                "https://www.psychologs.com/wp-content/uploads/2023/03/How-We-Flourish-In-a-Supportive-Work-Environment.jpg",
+            },
+            {
+              text: "Independent and Autonomous",
+              image:
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4DNpqat5l8zwL2rg1fIRWEavE5szvuVDNApXraF-Sqmm1tnyxhMezaAUwx-u-o2VHzZU&usqp=CAU",
+            },
+          ],
+        },
+        {
+          question: "What level of responsibility do you prefer?",
+          options: [
+            {
+              text: "Leadership with Strategic Decision-making",
+              image:
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkm1rIfbtp7u4oMKoSTKX1DAOfZrylm-k6aA&s",
+            },
+            {
+              text: "Independent Specialist/Expert Role",
+              image:
+                "https://lsj.com.au/wp-content/uploads/2022/02/header-Family-1180x560.jpg",
+            },
+            {
+              text: "Team Member with Shared Responsibility",
+              image:
+                "https://taskbulletuniversity.com/wp-content/uploads/2024/01/10-8-1024x538.png",
+            },
+            {
+              text: "Project Management with Defined Goals",
+              image:
+                "https://www.aim.com.au/sites/default/files/AIM-Blogs-How-Project-Management-Can-Be-Your-Game-Changer.png",
+            },
+          ],
+        },
+      ];
 
+      let currentStep = 0;
+      const totalSteps = quizData.length;
+      const selections = Array(totalSteps).fill(null);
 
+      const questionContainer = document.getElementById("question-container");
+      const progressFill = document.querySelector(".progress-fill");
+      const progressPercentage = document.getElementById("progress-percentage");
+      const currentStepElem = document.getElementById("current-step");
+      const validationMsg = document.getElementById("validation-message");
+      const nextBtn = document.getElementById("next-btn");
+      const prevBtn = document.getElementById("prev-btn");
+      const stepMarkersContainer = document.getElementById("step-markers");
 
-
-        let currentStep = 0;
-        const totalSteps = quizData.length;
-        const selections = Array(totalSteps).fill(null);
-
-        const questionContainer = document.getElementById('question-container');
-        const progressFill = document.querySelector('.progress-fill');
-        const progressPercentage = document.getElementById('progress-percentage');
-        const currentStepElem = document.getElementById('current-step');
-        const validationMsg = document.getElementById('validation-message');
-        const nextBtn = document.getElementById('next-btn');
-        const prevBtn = document.getElementById('prev-btn');
-        const stepMarkersContainer = document.getElementById('step-markers');
-
-        function renderStepMarkers() {
-            stepMarkersContainer.innerHTML = '';
-            for (let i = 0; i < totalSteps; i++) {
-                const marker = document.createElement('div');
-                marker.className = 'step-marker';
-                if (i < currentStep) marker.classList.add('completed');
-                if (i === currentStep) marker.classList.add('active');
-                stepMarkersContainer.appendChild(marker);
-            }
+      function renderStepMarkers() {
+        stepMarkersContainer.innerHTML = "";
+        for (let i = 0; i < totalSteps; i++) {
+          const marker = document.createElement("div");
+          marker.className = "step-marker";
+          if (i < currentStep) marker.classList.add("completed");
+          if (i === currentStep) marker.classList.add("active");
+          stepMarkersContainer.appendChild(marker);
         }
+      }
 
-        function renderQuestion() {
-            const data = quizData[currentStep];
-            currentStepElem.textContent = currentStep + 1;
-            document.getElementById('total-steps').textContent = totalSteps;
-            const percentage = Math.round(((currentStep + 1) / totalSteps) * 100);
-            progressFill.style.width = percentage + '%';
-            progressPercentage.textContent = percentage;
+      function renderQuestion() {
+        const data = quizData[currentStep];
+        currentStepElem.textContent = currentStep + 1;
+        document.getElementById("total-steps").textContent = totalSteps;
+        const percentage = Math.round(((currentStep + 1) / totalSteps) * 100);
+        progressFill.style.width = percentage + "%";
+        progressPercentage.textContent = percentage;
 
-            validationMsg.classList.remove('show');
-            nextBtn.classList.toggle('disabled', selections[currentStep] === null);
+        validationMsg.classList.remove("show");
+        nextBtn.classList.toggle("disabled", selections[currentStep] === null);
 
-            renderStepMarkers();
+        renderStepMarkers();
 
-            questionContainer.innerHTML = `
+        questionContainer.innerHTML = `
                 <h1>${data.question}</h1>
                 <div class="options">
-                ${data.options.map((opt, index) => `
-                    <div class="option-card${selections[currentStep] === index ? ' selected' : ''}" data-index="${index}">
-                    <img src="${opt.image}" class="option-image" alt="Option Image">
+                ${data.options
+                  .map(
+                    (opt, index) => `
+                    <div class="option-card${
+                      selections[currentStep] === index ? " selected" : ""
+                    }" data-index="${index}">
+                    <img src="${
+                      opt.image
+                    }" class="option-image" alt="Option Image">
                     <div class="option-label">${opt.text}</div>
                     </div>
-                `).join('')}
+                `
+                  )
+                  .join("")}
                 </div>
             `;
 
-            document.querySelectorAll('.option-card').forEach(card => {
-                card.addEventListener('click', () => {
-                const index = parseInt(card.dataset.index);
-                selections[currentStep] = index;
-                renderQuestion();
-                });
-            });
+        document.querySelectorAll(".option-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            const index = parseInt(card.dataset.index);
+            selections[currentStep] = index;
+            renderQuestion();
+          });
+        });
 
-            prevBtn.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+        prevBtn.style.visibility = currentStep === 0 ? "hidden" : "visible";
+      }
+
+      nextBtn.addEventListener("click", () => {
+        if (selections[currentStep] === null) {
+          validationMsg.classList.add("show");
+          return;
         }
+        if (currentStep < totalSteps - 1) {
+          currentStep++;
+          renderQuestion();
+        } else {
+          showResults();
+        }
+      });
 
-        nextBtn.addEventListener('click', () => {
-            if (selections[currentStep] === null) {
-                validationMsg.classList.add('show');
-                return;
-            }
-            if (currentStep < totalSteps - 1) {
-                currentStep++;
-                renderQuestion();
-            } else {
-                showResults();
-            }
-        });
+      prevBtn.addEventListener("click", () => {
+        if (currentStep > 0) {
+          currentStep--;
+          renderQuestion();
+        }
+      });
 
-        prevBtn.addEventListener('click', () => {
-            if (currentStep > 0) {
-                currentStep--;
-                renderQuestion();
-            }
-        });
+      function showResults() {
+        const resultsHtml = selections
+          .map((sel, i) => {
+            const question = quizData[i].question;
+            const answer = quizData[i].options[sel].text;
+            return `${i + 1}. ${question}\nAnswer: ${answer}\n`;
+          })
+          .join("\n");
 
-        function showResults() {
-            const resultsHtml = selections.map((sel, i) => {
-                const question = quizData[i].question;
-                const answer = quizData[i].options[sel].text;
-                return `${i + 1}. ${question}\nAnswer: ${answer}\n`;
-            }).join('\n');
-
-            questionContainer.innerHTML = `
+        questionContainer.innerHTML = `
                 <div class="quiz-results">
                 <h2>Your Quiz Results</h2>
                 <pre>${resultsHtml}</pre>
                 </div>
             `;
-            document.querySelector('.modal-footer').style.display = 'none';
-            document.querySelector('.progress-container').style.display = 'none';
-            }
+        document.querySelector(".modal-footer").style.display = "none";
+        document.querySelector(".progress-container").style.display = "none";
+      }
 
-        renderQuestion();
+      renderQuestion();
     </script>
-</body>
+  </body>
 </html>
