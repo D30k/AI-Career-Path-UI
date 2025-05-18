@@ -1,8 +1,4 @@
 from flask import Blueprint, Flask, render_template, request, jsonify
-import requests
-import os
-from dotenv import load_dotenv
-from flask import session, redirect, url_for
 
 from modules.results.utils import build_prompt, query_mistral
 
@@ -22,8 +18,6 @@ def submit_quiz():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-import re
 
 @results.route('/follow-up', methods=['POST'])
 def follow_up():

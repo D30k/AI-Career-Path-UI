@@ -1,11 +1,5 @@
-from flask import Flask, render_template, request, jsonify
-import requests
-import os
-import re
-import sqlite3
+from flask import Flask
 from config import Config
-
-from flask import session, redirect, url_for
 
 from modules.auth.routes import auth
 from modules.quiz.routes import quiz
