@@ -1,7 +1,7 @@
 from flask import Flask
 import requests
 from config import Config
-
+import re
 from flask import session, redirect, url_for
 
 def build_prompt(answers):
@@ -14,9 +14,9 @@ def build_prompt(answers):
         "",
         "User's behavioral answers:"
     ]
-    for question, answer in answers.items():
-        lines.append(f"- {question}: {answer}")
-    return "\n".join(lines)
+    for qa in answers:
+        lines.append(f"- {qa["question"]}: {qa["answer"]}")
+    return "\n".join(lines)     
 
 
 def query_mistral(prompt):
@@ -37,5 +37,6 @@ def query_mistral(prompt):
     matches = re.findall(pattern, text, re.IGNORECASE)
     print("🧪 Matches found:", matches)
 
-    structured = [{"career": name.strip(), "match": int(percent)} for name, percent in matches]
-    return {"recommendations": structured}
+    # structured = [{"career": name.strip(), "match": int(percent)} for name, percent in matches]
+    # return {"recommendations": structured}
+    return text

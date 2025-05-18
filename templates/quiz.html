@@ -511,24 +511,24 @@
         renderStepMarkers();
 
         questionContainer.innerHTML = `
-                <h1>${data.question}</h1>
-                <div class="options">
-                ${data.options
-                  .map(
-                    (opt, index) => `
-                    <div class="option-card${
-                      selections[currentStep] === index ? " selected" : ""
-                    }" data-index="${index}">
-                    <img src="${
-                      opt.image
-                    }" class="option-image" alt="Option Image">
-                    <div class="option-label">${opt.text}</div>
-                    </div>
-                `
-                  )
-                  .join("")}
-                </div>
-            `;
+                  <h1>${data.question}</h1>
+                  <div class="options">
+                  ${data.options
+                    .map(
+                      (opt, index) => `
+                      <div class="option-card${
+                        selections[currentStep] === index ? " selected" : ""
+                      }" data-index="${index}">
+                      <img src="${
+                        opt.image
+                      }" class="option-image" alt="Option Image">
+                      <div class="option-label">${opt.text}</div>
+                      </div>
+                  `
+                    )
+                    .join("")}
+                  </div>
+              `;
 
         document.querySelectorAll(".option-card").forEach((card) => {
           card.addEventListener("click", () => {
@@ -562,23 +562,40 @@
       });
 
       function showResults() {
-        const resultsHtml = selections
-          .map((sel, i) => {
-            const question = quizData[i].question;
-            const answer = quizData[i].options[sel].text;
-            return `${i + 1}. ${question}\nAnswer: ${answer}\n`;
-          })
-          .join("\n");
+        const answers = selections.map((sel, i) => {
+          return {
+            question: quizData[i].question,
+            answer: quizData[i].options[sel].text,
+          };
+        });
 
-        questionContainer.innerHTML = `
-                <div class="quiz-results">
-                <h2>Your Quiz Results</h2>
-                <pre>${resultsHtml}</pre>
-                </div>
-            `;
-        document.querySelector(".modal-footer").style.display = "none";
-        document.querySelector(".progress-container").style.display = "none";
+        fetch("/submit-quiz", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ answers: answers }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.redirect) {
+              window.location.href = data.redirect;
+            }
+          })
+          .catch((error) => {
+            console.error("Error submitting quiz:", error);
+          });
       }
+
+      prevBtn.addEventListener("click", () => {
+        if (currentQuestion > 0) showQuestion(currentQuestion - 1);
+      });
+      nextBtn.addEventListener("click", () => {
+        if (!userAnswers[currentQuestion]) return showValidation();
+        if (currentQuestion < totalQuestions - 1)
+          showQuestion(currentQuestion + 1);
+        else submitAnswers();
+      });
 
       renderQuestion();
     </script>

@@ -1,4 +1,4 @@
-from flask import Blueprint, Flask, render_template, request, jsonify
+from flask import Blueprint, session, render_template, request, jsonify, url_for
 
 from modules.results.utils import build_prompt, query_mistral
 
@@ -6,17 +6,22 @@ results = Blueprint('results', __name__)
 
 @results.route('/submit-quiz', methods=['POST'])
 def submit_quiz():
+      
     data = request.json
     answers = data.get("answers", {})
+    
     if not answers:
-        return jsonify({"error": "No answers received."}), 400
-
+        return jsonify({"error": "No answer received"}), 400
+    
     prompt = build_prompt(answers)
     try:
         result = query_mistral(prompt)
-        return jsonify({"result": result})
+        session['result'] = result
+        return jsonify({"redirect": url_for('results.result')})
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 
 
 @results.route('/follow-up', methods=['POST'])
@@ -34,3 +39,8 @@ def follow_up():
         return jsonify({"error": str(e)}), 500
 
 
+
+@results.route('/result')
+def result():
+    result = session.get('result', [])
+    return render_template('result.html', result=result)  

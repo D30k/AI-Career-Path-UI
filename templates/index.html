@@ -836,20 +836,6 @@
 
 
 
-<script>
-    function takeQuiz() {
-        alert("Quiz started!");
-        // Or redirect to another page like this:
-        window.location.href = "UI.html";
-    }
-</script>
-
-
-
-
-
-
-
 <body>
     <!-- Header -->
     <header>
@@ -889,7 +875,7 @@
             <h2>Discover Your Perfect Career Path with AI</h2>
             <p>Our advanced AI analyzes your skills, interests, and personality to recommend the best career paths for your unique profile</p>
             <div class="hero-buttons">
-                <button class="btn btn-large btn-secondary" id="take-quiz-btn" onclick="takeQuiz()" >Take Career Quiz</button>
+                  <a href="{{ url_for('quiz.quizzes') }}">   <button class="btn btn-large btn-secondary" id="take-quiz-btn" >Take Career Quiz</button></a>
             </div>
         </div>
     </section>
@@ -1024,7 +1010,8 @@
         <div class="container">
             <h3>Ready to Take the Next Step?</h3>
             <p>Begin your journey toward a fulfilling career today with Career Pathway AI.</p>
-            <button class="btn btn-large btn-secondary" onclick="takeQuiz()">Start Your Quiz</button>
+
+                      <a href="{{ url_for('quiz.quizzes') }}">   <button class="btn btn-large btn-secondary">Start Your Quiz</button></a>
         </div>
     </section>
 

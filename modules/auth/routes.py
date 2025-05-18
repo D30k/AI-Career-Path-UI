@@ -1,6 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, session
 import sqlite3
-import requests
 import os
 from dotenv import load_dotenv
 from functools import wraps
