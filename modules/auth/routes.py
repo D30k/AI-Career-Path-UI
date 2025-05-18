@@ -22,7 +22,7 @@ def login():
         if user and check_password_hash(user[2], password):
             session['user_id'] = user[0]
             session['email'] = user[1]
-            return redirect(url_for('home'))
+            return redirect(url_for('quiz.home'))
         else:
             return render_template('login.html', error="Invalid credentials")
     return render_template('login.html')
@@ -44,9 +44,9 @@ def register():
         except sqlite3.IntegrityError:
             return render_template('register.html', error="Email already exists")
     return render_template('register.html')
-    
+
 
 @auth.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('home'))
+    return redirect(url_for('quiz.home'))
