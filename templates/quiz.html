@@ -574,7 +574,10 @@
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ answers: answers }),
+          body: JSON.stringify({
+            answers: answers,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }),
         })
           .then((response) => response.json())
           .then((data) => {

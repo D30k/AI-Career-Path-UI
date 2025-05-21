@@ -9,11 +9,15 @@ def submit_quiz():
       
     data = request.json
     answers = data.get("answers", {})
+    timezone = data.get("timezone", None)
     
     if not answers:
         return jsonify({"error": "No answer received"}), 400
     
-    prompt = build_prompt(answers)
+     # Add a random value to the prompt to encourage new generations
+    session['answers'] = answers
+    session['timezone'] = timezone
+    prompt = build_prompt(answers, timezone)
     try:
         result = query_mistral(prompt)
         session['result'] = result
