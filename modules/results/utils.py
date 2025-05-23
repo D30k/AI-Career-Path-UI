@@ -2,6 +2,7 @@ from flask import Flask
 import requests
 from config import Config
 import re
+import json
 from flask import session, redirect, url_for
 
 def build_prompt(answers, timezone = None):
@@ -12,18 +13,29 @@ def build_prompt(answers, timezone = None):
         lines.append(f"The user's timezone is: {timezone}. Recommend universities and degrees relevant to this region.")
     lines += [
         "Based on the user's behavioral answers, recommend 3 to 5 career paths.",
-        "For each career path, provide at least two or three different university course options.",
+        "For each career path, provide at least two or three different university course options in the user's region.",
         "For each course option, provide:",
         "- Example university in the user's region",
         "- Example degree/course name",
         "- Estimated annual fee in AUD (e.g., $35,000)",
-        "Format each recommendation like:",
-        "- Career: Data Scientist",
-        "  1. University: Swinburne University | Course: Bachelor of Data Science | Fee: $35,000",
-        "  2. University: Monash University | Course: Bachelor of Computer Science | Fee: $36,000",
-        "  3. University: University of Melbourne | Course: Bachelor of Science (Data Science) | Fee: $38,000",
-        "Add no extra explanation. Begin directly with the list. provide career and university data in json format",
-        "",
+        "Format the response as valid JSON inside ```json``` tags. Do not include extra explanations. Begin directly with the JSON.",
+        "Example JSON format:",
+       '''
+        [
+            {
+                "careerPath": "Career Name",
+                "courseOptions": [
+                {
+                    "university": "University Name",
+                    "courseName": "Degree/Course Name",
+                    "annualFee": "$35,000"
+                }
+                // ...at least two or three course options
+                ]
+            }
+            // ...3 to 5 career objects
+        ]
+        '''
         "User's behavioral answers:"
     ]
     for qa in answers:
@@ -44,10 +56,22 @@ def query_mistral(prompt):
 
     print("🔍 Raw LLM output:\n", text)
 
-    # Updated regex
-    pattern = r"-\s*(.*?):\s*(\d{1,3})% match"
-    matches = re.findall(pattern, text, re.IGNORECASE)
-    print("🧪 Matches found:", matches)
+    json = extract_json(text)
+    
+    return {"json": json, "output": text}
 
-    structured = [{"career": name.strip(), "match": int(percent)} for name, percent in matches]
-    return {"recommendations": structured, "output": text}
+
+def extract_json(text):
+    json_blocks = re.findall(r'```json\n(.*?)\n```', text, re.DOTALL)
+    if json_blocks:
+        json_str = json_blocks[-1] # Get the last JSON block
+        try:
+            parsed_json = json.loads(json_str)
+            print(json.dumps(parsed_json, indent=2))  # Pretty-print JSON
+            return parsed_json
+        except json.JSONDecodeError as e:
+            print(f"Error parsing JSON: {e}")
+            return None
+    else:
+        print("No JSON content found in response.")
+        return None
