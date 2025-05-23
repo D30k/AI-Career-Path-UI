@@ -4,12 +4,19 @@ from config import Config
 import re
 from flask import session, redirect, url_for
 
-def build_prompt(answers, timezone = None):
+def build_prompt(answers, timezone=None, user_info=None):
     lines = [
         "You are a career advisor AI.",
     ]
+
     if timezone:
         lines.append(f"The user's timezone is: {timezone}. Recommend universities and degrees relevant to this region.")
+
+    if user_info:
+        lines.append(
+            f"User information: Country: {user_info[0]}, Age: {user_info[1]}, Gender: {user_info[2]}, Education: {user_info[3]}"
+        )
+
     lines += [
         "Based on the user's behavioral answers, recommend 3 to 5 career paths.",
         "For each career path, provide at least two or three different university course options.",
@@ -26,9 +33,12 @@ def build_prompt(answers, timezone = None):
         "",
         "User's behavioral answers:"
     ]
+
     for qa in answers:
-        lines.append(f"- {qa["question"]}: {qa["answer"]}")
-    return "\n".join(lines)     
+        lines.append(f"- {qa['question']}: {qa['answer']}")
+
+    return "\n".join(lines)
+  
 
 
 def query_mistral(prompt):
@@ -36,18 +46,8 @@ def query_mistral(prompt):
         "Authorization": f"Bearer {Config.HUGGINGFACE_API_KEY}",
         "Content-Type": "application/json"
     }
-    user_id = session.get('user_id')
-    email = session.get('email')
-    country = session.get('country')
-    age = session.get('age')
-    gender = session.get('gender')
-    highest_education = session.get('highest_education')
-
-# Create a comma-separated string of user info
-    user_info_str = f"User: {email}, Country: {country}, Age: {age}, Gender: {gender}, Education: {highest_education}"
-
     
-    response = requests.post(Config.MODEL_ENDPOINT, headers=headers, json={"inputs": prompt, "user_info": user_info_str})
+    response = requests.post(Config.MODEL_ENDPOINT, headers=headers, json={"inputs": prompt})
     response.raise_for_status()
 
     result = response.json()

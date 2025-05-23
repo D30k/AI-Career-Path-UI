@@ -17,7 +17,13 @@ def submit_quiz():
      # Add a random value to the prompt to encourage new generations
     session['answers'] = answers
     session['timezone'] = timezone
-    prompt = build_prompt(answers, timezone)
+    user_info = [
+    session.get('country'),
+    session.get('age'),
+    session.get('gender'),
+    session.get('highest_education')
+    ]
+    prompt = build_prompt(answers, timezone, user_info)
     try:
         result = query_mistral(prompt)
         session['result'] = result
