@@ -132,7 +132,7 @@
       }
       .quiz-results {
         text-align: center;
-        padding: 30px 0 40px;
+        padding: 30px 0;
       }
       .quiz-results h2 {
         font-size: 28px;
@@ -147,7 +147,6 @@
       }
 
       .feedback {
-        margin-top: 20px;
         display: flex;
         justify-content: center;
         gap: 24px;
@@ -176,13 +175,54 @@
         margin-bottom: 8px;
       }
 
-      .follow-up-textarea {
-        width: 90%;
+      .followup-textarea {
+        width: 100%;
         max-width: 500px;
         border-radius: 6px;
         border: 1px solid #e2e8f0;
         padding: 8px;
         font-size: 1rem;
+      }
+
+      .followup-response {
+        max-height: 400px;
+        width: 100%;
+        overflow: auto;
+        margin-top: 20px;
+        line-height: 1.4;
+        text-align: justify;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        margin: 15px;
+        margin-bottom: 30px;
+        padding: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      h4 {
+        color: #333;
+        font-size: 1.5em;
+        margin-bottom: 10px;
+      }
+
+      .course {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+
+      .university {
+        font-weight: bold;
+        color: #007bff;
+      }
+
+      .annual-fee {
+        color: #28a745;
+        font-weight: bold;
       }
     </style>
   </head>
@@ -193,10 +233,20 @@
           {% if error %}
           <h2>Error</h2>
           <p>{{ error }}</p>
-          {% elif result.output %}
-          <h2>Your Recommended Careers</h2>
-          <pre>{{result.output}}</pre>
-          {% else %}
+          {% elif result.json %}
+          <h2>Your Recommended Career Paths</h2>
+          {% for career in result.json %}
+          <ul class="card">
+            <h4>{{ career.careerPath }}</h4>
+            {% for course in career.courseOptions %}
+            <div class="course">
+              <div class="university">{{ course.university}}</div>
+              <div class="course-name">{{ course.courseName }}</div>
+              <span class="annual-fee">{{ course.annualFee }}</span>
+            </div>
+            {% endfor %}
+          </ul>
+          {% endfor %} {% else %}
           <h2>No recommendations found.</h2>
           {% endif %}
         </div>
@@ -218,15 +268,15 @@
         <h3>Ask a follow-up question:</h3>
         <textarea
           id="followup-input"
-          rows="3"
-          class="follow-up-textarea"
+          rows="4"
+          class="followup-textarea"
           placeholder="Type your question here..."
         ></textarea>
         <br />
         <button id="followup-btn" class="btn btn-next" style="margin-top: 10px">
           Submit
         </button>
-        <div id="followup-response"></div>
+        <p class="followup-response" id="followup-response"></p>
       </div>
     </div>
   </body>
@@ -268,7 +318,7 @@
             .then((res) => res.json())
             .then((data) => {
               if (data.response) {
-                followupResponse.textContent = data.response;
+                followupResponse.textContent = data.response.json.answer;
               } else if (data.error) {
                 followupResponse.textContent = "Error: " + data.error;
               } else {
