@@ -569,6 +569,9 @@
           };
         });
 
+        nextBtn.classList.add("disabled");
+        nextBtn.textContent = "Generating Results...";
+
         fetch("/submit-quiz", {
           method: "POST",
           headers: {
@@ -587,6 +590,10 @@
           })
           .catch((error) => {
             console.error("Error submitting quiz:", error);
+          })
+          .finally(() => {
+            nextBtn.classList.remove("disabled");
+            nextBtn.textContent = "Next →";
           });
       }
       renderQuestion();
