@@ -32,52 +32,7 @@
         justify-content: space-between;
         margin-bottom: 30px;
       }
-      .progress-container {
-        flex: 1;
-        margin-right: 30px;
-      }
-      .progress-label {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 5px;
-        font-size: 12px;
-        color: #64748b;
-      }
-      .progress-bar {
-        height: 6px;
-        background-color: #e2e8f0;
-        border-radius: 3px;
-        position: relative;
-        overflow: hidden;
-      }
-      .progress-fill {
-        position: absolute;
-        height: 100%;
-        background-color: #3b82f6;
-        border-radius: 3px;
-        transition: width 0.3s ease;
-      }
-      .step-markers {
-        position: relative;
-        height: 10px;
-        display: flex;
-        justify-content: space-between;
-      }
-      .step-marker {
-        width: 10px;
-        height: 10px;
-        background-color: #e2e8f0;
-        border-radius: 50%;
-        margin-top: -8px;
-        z-index: 2;
-        transition: background-color 0.3s ease;
-      }
-      .step-marker.active {
-        background-color: #3b82f6;
-      }
-      .step-marker.completed {
-        background-color: #3b82f6;
-      }
+
       .close-button {
         background: none;
         border: none;
@@ -85,6 +40,7 @@
         font-size: 16px;
         color: #94a3b8;
       }
+
       .modal-content {
         padding: 10px 0 30px;
       }
@@ -176,7 +132,7 @@
       }
       .quiz-results {
         text-align: center;
-        padding: 30px 0 40px;
+        padding: 30px 0;
       }
       .quiz-results h2 {
         font-size: 28px;
@@ -189,29 +145,192 @@
         word-wrap: break-word;
         color: #475569;
       }
+
+      .feedback {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+      }
+
+      .feedback-icon {
+        font-size: 2rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      .feedback-msg {
+        text-align: center;
+        margin-top: 10px;
+        color: #3b82f6;
+        font-size: 1rem;
+      }
+
+      .followup-section {
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      .followup-section h3 {
+        margin-bottom: 8px;
+      }
+
+      .followup-textarea {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        padding: 8px;
+        font-size: 1rem;
+      }
+
+      .followup-response {
+        max-height: 400px;
+        width: 100%;
+        overflow: auto;
+        margin-top: 20px;
+        line-height: 1.4;
+        text-align: justify;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        margin: 15px;
+        margin-bottom: 30px;
+        padding: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      h4 {
+        color: #333;
+        font-size: 1.5em;
+        margin-bottom: 10px;
+      }
+
+      .course {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+
+      .university {
+        font-weight: bold;
+        color: #007bff;
+      }
+
+      .annual-fee {
+        color: #28a745;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
     <div class="modal">
-      <div class="modal-header">
-       
       <div class="modal-content" id="question-container">
+        <div class="quiz-results">
           {% if error %}
-            <div class="quiz-results">
-            <h2>Error</h2>
-            <p>{{ error }}</p>
+          <h2>Error</h2>
+          <p>{{ error }}</p>
+          {% elif result.json %}
+          <h2>Your Recommended Career Paths</h2>
+          {% for career in result.json %}
+          <ul class="card">
+            <h4>{{ career.careerPath }}</h4>
+            {% for course in career.courseOptions %}
+            <div class="course">
+              <div class="university">{{ course.university}}</div>
+              <div class="course-name">{{ course.courseName }}</div>
+              <span class="annual-fee">{{ course.annualFee }}</span>
             </div>
-        {% elif result %}
-            <div class="quiz-results">
-            <h2>Your Recommended Careers</h2>
-            <div>{{result}} </div>
-            </div>
-            {% else %}
-                <div class="quiz-results">
-                <h2>No recommendations found.</h2>
-                </div>
-            {% endif %}
+            {% endfor %}
+          </ul>
+          {% endfor %} {% else %}
+          <h2>No recommendations found.</h2>
+          {% endif %}
         </div>
+
+        <!-- Feedback and Retry Buttons -->
+        <div class="feedback">
+          <button id="thumbs-up" title="Helpful" class="feedback-icon">
+            👍
+          </button>
+          <button id="thumbs-down" title="Not Helpful" class="feedback-icon">
+            👎
+          </button>
+        </div>
+        <div id="feedback-msg" class="feedback-msg"></div>
+      </div>
+
+      <!-- Follow-up Question Section -->
+      <div class="followup-section">
+        <h3>Ask a follow-up question:</h3>
+        <textarea
+          id="followup-input"
+          rows="4"
+          class="followup-textarea"
+          placeholder="Type your question here..."
+        ></textarea>
+        <br />
+        <button id="followup-btn" class="btn btn-next" style="margin-top: 10px">
+          Submit
+        </button>
+        <p class="followup-response" id="followup-response"></p>
+      </div>
     </div>
   </body>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const thumbsUp = document.getElementById("thumbs-up");
+      const thumbsDown = document.getElementById("thumbs-down");
+      const feedbackMsg = document.getElementById("feedback-msg");
+
+      const followupBtn = document.getElementById("followup-btn");
+      const followupInput = document.getElementById("followup-input");
+      const followupResponse = document.getElementById("followup-response");
+
+      if (thumbsUp) {
+        thumbsUp.onclick = function () {
+          feedbackMsg.textContent = "Thank you for your feedback! 👍";
+        };
+      }
+      if (thumbsDown) {
+        thumbsDown.onclick = function () {
+          feedbackMsg.textContent = "Sorry to hear that. 👎";
+        };
+      }
+
+      if (followupBtn) {
+        followupBtn.onclick = function () {
+          const question = followupInput.value.trim();
+          if (!question) {
+            followupResponse.textContent = "Please enter a question.";
+            return;
+          }
+          followupResponse.textContent = "Thinking...";
+          fetch("/follow-up", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ followup: question }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.response) {
+                followupResponse.textContent = data.response.json.answer;
+              } else if (data.error) {
+                followupResponse.textContent = "Error: " + data.error;
+              } else {
+                followupResponse.textContent = "No response received.";
+              }
+            })
+            .catch(() => {
+              followupResponse.textContent =
+                "Could not get a response. Please try again.";
+            });
+        };
+      }
+    });
+  </script>
 </html>

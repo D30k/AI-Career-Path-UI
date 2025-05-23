@@ -569,12 +569,18 @@
           };
         });
 
+        nextBtn.classList.add("disabled");
+        nextBtn.textContent = "Generating Results...";
+
         fetch("/submit-quiz", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ answers: answers }),
+          body: JSON.stringify({
+            answers: answers,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }),
         })
           .then((response) => response.json())
           .then((data) => {
@@ -584,19 +590,12 @@
           })
           .catch((error) => {
             console.error("Error submitting quiz:", error);
+          })
+          .finally(() => {
+            nextBtn.classList.remove("disabled");
+            nextBtn.textContent = "Next →";
           });
       }
-
-      prevBtn.addEventListener("click", () => {
-        if (currentQuestion > 0) showQuestion(currentQuestion - 1);
-      });
-      nextBtn.addEventListener("click", () => {
-        if (!userAnswers[currentQuestion]) return showValidation();
-        if (currentQuestion < totalQuestions - 1)
-          showQuestion(currentQuestion + 1);
-        else submitAnswers();
-      });
-
       renderQuestion();
     </script>
   </body>
