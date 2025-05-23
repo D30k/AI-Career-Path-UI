@@ -62,9 +62,9 @@ def query_mistral(prompt):
 
 
 def extract_json(text):
-    json_blocks = re.findall(r'```json\n(.*?)\n```', text, re.DOTALL)
-    if json_blocks:
-        json_str = json_blocks[-1] # Get the last JSON block
+    json_match = re.search(r'```json\n(.*?)\n```', text, re.DOTALL)
+    if json_match:
+        json_str = json_match.group(1)
         try:
             parsed_json = json.loads(json_str)
             print(json.dumps(parsed_json, indent=2))  # Pretty-print JSON

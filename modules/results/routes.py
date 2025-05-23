@@ -39,10 +39,9 @@ def follow_up():
         f"You are a career guidance expert AI. Answer the user's follow-up question below.\n\n"
         f"Question: \"{question}\"\n\n"
         "Give a thoughtful and helpful response. Answer should begin inside ```json``` tags. "
-        "Example JSON format:\n```json\n{\n\"answer\": \"Your answer here\"\n}\n```:\n"
+        "Example JSON format:\n```\n{\n\"answer\": \"Your answer here\"\n}\n```:\n"
         )
-   
-   
+     
     try:
         result = query_mistral(prompt)
         return jsonify({"response": result})
