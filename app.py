@@ -4,6 +4,9 @@ from config import Config
 from modules.auth.routes import auth
 from modules.quiz.routes import quiz
 from modules.results.routes import results
+from init_db import init_user_db
+init_user_db()
+
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config.from_object(Config)

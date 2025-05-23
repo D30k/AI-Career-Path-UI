@@ -24,7 +24,18 @@ def query_mistral(prompt):
         "Authorization": f"Bearer {Config.HUGGINGFACE_API_KEY}",
         "Content-Type": "application/json"
     }
-    response = requests.post(Config.MODEL_ENDPOINT, headers=headers, json={"inputs": prompt})
+    user_id = session.get('user_id')
+    email = session.get('email')
+    country = session.get('country')
+    age = session.get('age')
+    gender = session.get('gender')
+    highest_education = session.get('highest_education')
+
+# Create a comma-separated string of user info
+    user_info_str = f"User: {email}, Country: {country}, Age: {age}, Gender: {gender}, Education: {highest_education}"
+
+    
+    response = requests.post(Config.MODEL_ENDPOINT, headers=headers, json={"inputs": prompt, "user_info": user_info_str})
     response.raise_for_status()
 
     result = response.json()
