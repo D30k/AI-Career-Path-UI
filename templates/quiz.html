@@ -574,7 +574,10 @@
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ answers: answers }),
+          body: JSON.stringify({
+            answers: answers,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }),
         })
           .then((response) => response.json())
           .then((data) => {
@@ -586,6 +589,7 @@
             console.error("Error submitting quiz:", error);
           });
       }
+<<<<<<< HEAD
 
       /*prevBtn.addEventListener("click", () => {
         if (currentQuestion > 0) showQuestion(currentQuestion - 1);
@@ -597,6 +601,8 @@
         else submitAnswers();
       });*/
 
+=======
+>>>>>>> 75e3a83c65810195ed902b84d25c18c52bac000c
       renderQuestion();
     </script>
   </body>

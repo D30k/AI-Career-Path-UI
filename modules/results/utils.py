@@ -4,13 +4,25 @@ from config import Config
 import re
 from flask import session, redirect, url_for
 
-def build_prompt(answers):
+def build_prompt(answers, timezone = None):
     lines = [
         "You are a career advisor AI.",
-        "Based on the user's behavioral answers, recommend 3 to 5 career paths with a confidence percentage (e.g., 87%) for each.",
-        "Format each career on a new line like:",
-        "- Career Name: 87% match",
-        "Add no extra explanation. Begin directly with the list.",
+    ]
+    if timezone:
+        lines.append(f"The user's timezone is: {timezone}. Recommend universities and degrees relevant to this region.")
+    lines += [
+        "Based on the user's behavioral answers, recommend 3 to 5 career paths.",
+        "For each career path, provide at least two or three different university course options.",
+        "For each course option, provide:",
+        "- Example university in the user's region",
+        "- Example degree/course name",
+        "- Estimated annual fee in AUD (e.g., $35,000)",
+        "Format each recommendation like:",
+        "- Career: Data Scientist",
+        "  1. University: Swinburne University | Course: Bachelor of Data Science | Fee: $35,000",
+        "  2. University: Monash University | Course: Bachelor of Computer Science | Fee: $36,000",
+        "  3. University: University of Melbourne | Course: Bachelor of Science (Data Science) | Fee: $38,000",
+        "Add no extra explanation. Begin directly with the list. provide career and university data in json format",
         "",
         "User's behavioral answers:"
     ]
@@ -48,6 +60,5 @@ def query_mistral(prompt):
     matches = re.findall(pattern, text, re.IGNORECASE)
     print("🧪 Matches found:", matches)
 
-    # structured = [{"career": name.strip(), "match": int(percent)} for name, percent in matches]
-    # return {"recommendations": structured}
-    return text
+    structured = [{"career": name.strip(), "match": int(percent)} for name, percent in matches]
+    return {"recommendations": structured, "output": text}
