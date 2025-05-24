@@ -38,7 +38,7 @@ def follow_up():
     prompt = (
         f"You are a career guidance expert AI. Answer the user's follow-up question below.\n\n"
         f"Question: \"{question}\"\n\n"
-        "Give a thoughtful and helpful response. Answer should begin inside ```json``` tags. "
+        "Give a thoughtful and helpful response. Format the response as valid JSON inside ```json``` tags. Do not include extra explanations. Begin directly with the JSON."
         "Example JSON format:\n```\n{\n\"answer\": \"Your answer here\"\n}\n```:\n"
         )
      
