@@ -185,12 +185,13 @@
       }
 
       .followup-response {
-        max-height: 400px;
         width: 100%;
-        overflow: auto;
-        margin-top: 20px;
+        margin-top: 10px;
         line-height: 1.4;
         text-align: justify;
+        white-space: break-spaces;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
 
       .card {
@@ -276,7 +277,7 @@
         <button id="followup-btn" class="btn btn-next" style="margin-top: 10px">
           Submit
         </button>
-        <p class="followup-response" id="followup-response"></p>
+        <pre class="followup-response" id="followup-response"></pre>
       </div>
     </div>
   </body>
@@ -318,7 +319,7 @@
             .then((res) => res.json())
             .then((data) => {
               if (data.response) {
-                followupResponse.textContent = data.response.json.answer;
+                followupResponse.textContent = data.response.output;
               } else if (data.error) {
                 followupResponse.textContent = "Error: " + data.error;
               } else {

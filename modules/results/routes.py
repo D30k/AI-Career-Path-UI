@@ -35,12 +35,7 @@ def follow_up():
     if not question:
         return jsonify({"error": "No question received"}), 400
 
-    prompt = (
-        f"You are a career guidance expert AI. Answer the user's follow-up question below.\n\n"
-        f"Question: \"{question}\"\n\n"
-        "Give a thoughtful and helpful response. Format the response as valid JSON inside ```json``` tags. Do not include extra explanations. Begin directly with the JSON."
-        "Example JSON format:\n```\n{\n\"answer\": \"Your answer here\"\n}\n```:\n"
-        )
+    prompt = f"You are a career guidance expert AI. Answer the user's follow-up question below.\n\nQuestion: \"{question}\"\n\n Give a thoughtful and helpful response in plain text."
      
     try:
         result = query_mistral(prompt)

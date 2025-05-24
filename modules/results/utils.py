@@ -18,9 +18,10 @@ def build_prompt(answers, timezone = None):
         "- Example university in the user's region",
         "- Example degree/course name",
         "- Estimated annual fee in AUD (e.g., $35,000)",
-        "Format the response as valid JSON inside ```json``` tags. Do not include extra explanations. Begin directly with the JSON.",
+        "Format the response as valid JSON inside ```json``` tags.Do not include the question or prompt or extra information in your output. Begin directly with the JSON.",
         "Example JSON format:",
        '''
+        ```json
         [
             {
                 "careerPath": "Career Name",
@@ -35,6 +36,7 @@ def build_prompt(answers, timezone = None):
             }
             // ...3 to 5 career objects
         ]
+        ```
         '''
         "User's behavioral answers:"
     ]
@@ -48,7 +50,7 @@ def query_mistral(prompt):
         "Authorization": f"Bearer {Config.HUGGINGFACE_API_KEY}",
         "Content-Type": "application/json"
     }
-    response = requests.post(Config.MODEL_ENDPOINT, headers=headers, json={"inputs": prompt})
+    response = requests.post(Config.MODEL_ENDPOINT, headers=headers, json={"inputs": prompt, "parameters": { "return_full_text": False }})
     response.raise_for_status()
 
     result = response.json()
