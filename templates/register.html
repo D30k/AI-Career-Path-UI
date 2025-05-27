@@ -11,25 +11,51 @@
         align-items: center;
         justify-content: center;
         height: 100vh;
+        margin: 0;
       }
+
       .auth-box {
         background: white;
         padding: 40px;
         border-radius: 8px;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        width: 400px;
+        width: 100%;
+        max-width: 420px;
       }
+
       h2 {
         text-align: center;
         color: #2563eb;
+        margin-bottom: 20px;
       }
-      input {
+
+      input,
+      select {
         width: 100%;
         padding: 12px;
-        margin: 10px 0;
+        margin: 10px 0 20px;
         border-radius: 5px;
         border: 1px solid #ccc;
+        box-sizing: border-box;
       }
+
+      label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 6px;
+        color: #333;
+      }
+
+      .radio-group {
+        margin-bottom: 20px;
+      }
+
+      .radio-group label {
+        font-weight: normal;
+        display: inline-block;
+        margin-right: 15px;
+      }
+
       button {
         width: 100%;
         padding: 12px;
@@ -39,19 +65,30 @@
         border-radius: 5px;
         font-weight: bold;
         cursor: pointer;
+        transition: background 0.3s;
       }
+
+      button:hover {
+        background: #1e4fd1;
+      }
+
       .error {
         color: red;
         font-size: 14px;
-        margin-top: 10px;
+        margin: 10px 0;
         text-align: center;
       }
+
       a {
         display: block;
         text-align: center;
-        margin-top: 15px;
+        margin-top: 20px;
         color: #555;
         text-decoration: none;
+      }
+
+      a:hover {
+        color: #2563eb;
       }
     </style>
   </head>
@@ -59,18 +96,42 @@
     <div class="auth-box">
       <h2>Create Account</h2>
       {% if error %}
-      <div class="error">{{ error }}</div>
+        <div class="error">{{ error }}</div>
       {% endif %}
       <form method="POST">
+        <label for="email">Email:</label>
         <input type="email" name="email" placeholder="Email" required />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-        />
+
+        <label for="password">Password:</label>
+        <input type="password" name="password" placeholder="Password" required />
+
+        <label for="country">Country:</label>
+        <input type="text" name="country" placeholder="Country" required />
+
+        <label for="age">Age:</label>
+        <input type="number" name="age" placeholder="Age" min="0" required />
+
+        <label>Gender:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="gender" value="Male" required /> Male</label>
+          <label><input type="radio" name="gender" value="Female" required /> Female</label>
+          <label><input type="radio" name="gender" value="Other" required /> Other</label>
+        </div>
+
+        <label for="highest_education">Highest Level of Education:</label>
+        <select name="highest_education" id="highest_education" required>
+          <option value="" disabled selected>Select your education</option>
+          <option value="High School">High School</option>
+          <option value="Diploma">Diploma</option>
+          <option value="Bachelor's">Bachelor's</option>
+          <option value="Master's">Master's</option>
+          <option value="PhD">PhD</option>
+          <option value="Other">Other</option>
+        </select>
+
         <button type="submit">Register</button>
       </form>
+
       <a href="/login">Already have an account? Login</a>
     </div>
   </body>
