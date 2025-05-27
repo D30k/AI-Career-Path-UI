@@ -41,7 +41,8 @@ def follow_up():
     if not question:
         return jsonify({"error": "No question received"}), 400
 
-    prompt = f"You are a career guidance expert AI. Answer the user's follow-up question below.\n\nQuestion: \"{question}\"\n\nGive a thoughtful and helpful response."
+    prompt = f"You are a career guidance expert AI. Answer the user's follow-up question below.\n\nQuestion: \"{question}\"\n\n Give a thoughtful and helpful response in plain text."
+     
     try:
         result = query_mistral(prompt)
         return jsonify({"response": result})
@@ -52,5 +53,6 @@ def follow_up():
 
 @results.route('/result')
 def result():
+
     result = session.get('result', [])
     return render_template('result.html', result=result)  
